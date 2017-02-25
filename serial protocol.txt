@@ -1,5 +1,6 @@
-*) All lines ends with "\n" or "\r" or "\n\r" or "\r\n", to be developed
-*) all commands and file names are case insesitive (frefear lower case)
+*) All lines ends with "\n" or "\r" or "\n\r" or "\r\n", tbd
+*) all commands and file names are case insesitive (prefear lower case)
+*) serial baudrate 115200 bit/sec or more
 
 *) From ESP (web,serial) to propeller
 L - list files
@@ -22,7 +23,7 @@ T 2017-02-17 14:02:00 0 - set time and date
 		T 2017-02-17 14:02:00 0 or "T error: incorrect date"
 						last digit (0-6 or 1-7, tbd) day of week
 
-*) From porpeller to ESP (Web, serial)
+*) From propeller to ESP (Web, serial)
 R 0 1234 - realtime data return
 			0 - number of sample since log started (0-10 000)
 			1234 - value (-32000 to 32000)
