@@ -8,7 +8,7 @@ L - list files
 		"file1.txt"
 		"file2.txt" where:
 				L - answer to list coomand
-				2 - number if lines(files) in replay
+				2 - number of lines(files) in replay
 D file1.txt - delete file
 		replay from propeller
 		"D file.txt" or "D error: no file" or "D error: SD failed"
@@ -28,7 +28,7 @@ R 0 1234 - realtime data return
 			1234 - value (-32000 to 32000)
 			
 			will start to send automatically after rocket motor launch
-			ESP must get al these data and covert to XML/jSon and send to web page near real time
+			ESP must get all these data and covert to XML/jSon and send to web page near real time
 
 S 1234 - current sensor value while in standby
 			will send 1000 times per second while in standby
