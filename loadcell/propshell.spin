@@ -22,52 +22,39 @@ CON
   LF            = 10            ' Code of character to send for LF
 
   MAX_BUF       = 32           ' Max. lenght of command line and parameters
-
 OBJ
-
   fdc   : "my_PBnJ_serial"
-
 VAR
   byte cmdBuf[MAX_BUF]          ' Buffer to hold the commad line
   byte parBuf[MAX_BUF]          ' Buffer to hold a single parameter of the command line
-
 PUB init(rxPin, txPin, baudRate)
 '' // Initialize the shell
 '' // @param                    rxPin                   Pin to use for serial RX
 '' // @param                    txPin                   Pin to use for serial TX
 '' // @param                    baudRate                Serial baudrate to use
-
   fdc.Start(rxPin, txPin, baudRate)
-
 PUB commandDef(cmd, cmdLine)
 '' // Define a command
 '' // @param                    cmd                     String which defines the command
 '' // @param                    cmdLine                 Command line to parse
 '' // @return                                           true if cmdLine matches cmd, false otherwise
-  ''fdc.Str(cmdLine)
   if not subMatches(cmd, cmdLine)
     return false
-
   return true
-
 PUB prompt
 '' // @return                                           input read from serial line
   result := fdc.rxLine(@cmdBuf, MAX_BUF)
-
 PUB commandHandled
 '' // Signal that command was handled
   abort
-
 PUB puts(str)
 '' // Write out string
 '' // @param                    str                     String to write to serial line
   fdc.Str(str)
-
 PUB putd(value) | i
 '' // Write out decimal
 '' // @param                    value                   Decimal value to write to serial line
         i := 1_000_000_000
-
         repeat 10
                 if value => i
                         fdc.tx(value / i + "0")
@@ -78,12 +65,10 @@ PUB putd(value) | i
                         fdc.tx("0")
 
                 i /= 10
-
 PUB currentPar
 '' // Get last param parsed (as raw string)
 '' // @return                                           Last parameter parsed as raw string value
   return @parBuf
-
 PUB currentParDec
 '' // Get last param parsed (as converted to decimal)
 '' // @return                                           Last parameter parsed as decimal value
@@ -94,9 +79,7 @@ PUB isEmptyCmd(cmdLine)
 '' // @return                                           True ic cmdLine is emtpy, false otherwise
   if strsize(cmdLine) == 1
     return true
-
   return false
-
 PUB parse(pos) | i, done, inputPtr, foundPos, curPos
 '' // Parse param from last command line read at given pos.
 '' // @param                    pos                     pos (0..m) of parameter to parse
@@ -119,9 +102,7 @@ PUB parse(pos) | i, done, inputPtr, foundPos, curPos
                    else
                         done := true
                 inputPtr++
-
         return done
-
 PUB parseAndCheck(pos, errMsg, checkDec)
 '' // Parse param at given pos and check if it is valid. If check fails, abort is issued.
 '' // @param                    pos                     pos (0..m) of parameter to parse
@@ -135,7 +116,6 @@ PUB parseAndCheck(pos, errMsg, checkDec)
     if errmsg<>false
       fdc.Str(errMsg)
     abort true
-
 PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
 '' // Match a substring. Used to see if a command line starts with a given command.
 '' // @param                    cmdPtr                  Pointer to command definition
@@ -144,33 +124,26 @@ PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
         lenCmdPtr := strsize(cmdPtr)
         if lenCmdPtr > strsize(inputPtr)
                 return false
-
         repeat i from 0 to lenCmdPtr - 1
           if byte[cmdPtr++] <> byte[inputPtr++]
              return false
-
         if byte[inputPtr] <> 32 and byte[inputPtr] <> CR and byte[inputPtr] <> LF
                 return false
-
         return true
-
 PRI strToDec(strPtr) : decVal | valid, char, index, multiply
 '' // Convert string to decimal.
 '' // @param                    strPtr                  Pointer to string which should be converted to decimal
 '' // @return                                           Decimal value for strPtr
         valid   := false
         decVal := index := 0
-
         repeat until ((char := byte[strPtr][index++]) == 0)
                 if char => "0" and char =< "9"
                         decVal := decVal * 10 + (char - "0")
                         valid := true
                 if byte[strPtr] == "-"
                         decVal := -decVal
-
         if not valid
           decVal := $FFFFFFFF
-
 DAT
 {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

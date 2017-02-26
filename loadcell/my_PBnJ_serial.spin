@@ -4,15 +4,13 @@
 // (c) Copyright 2011 Philip C. Pilgrim
 // Modified by JDat
 }}
-
 CON
-  IMAX          = 64             'Input buffer size  (must be less than 512, but needn't be a power of 2).
+  IMAX          = 32             'Input buffer size  (must be less than 512, but needn't be a power of 2).
   OMAX          = 256            'Output buffer size (ditto).
 VAR
   long  timedelay,inpmask,outmask
   word  ienqueue, idequeue, oenqueue, odequeue
   byte  ibuffer[IMAX], obuffer[OMAX], cogno
-
 PUB start(ipin, opin, baud)
 '' Start the UART:
 ''   ipin is the input pin.
@@ -74,10 +72,7 @@ PUB str(stringptr)
   repeat strsize(stringptr)
     tx(byte[stringptr++])
 PUB rxLine(stringPtr,stringSize)|a,b,c
-{{
-    read line for data until cr or lf occures
-}}
-    
+''    read line for data until cr or lf occures  
     b:=stringSize-2
     c:=stringPtr
     repeat while b>0
@@ -93,19 +88,13 @@ PUB rxLine(stringPtr,stringSize)|a,b,c
     byte[stringptr]:=13
     stringptr++    
     byte[stringptr]:=0
-
 PUB Dec(value) | i, x
-{{
-   example usage: serial.Dec(-1_234_567_890)
-}}
-
+''   example usage: serial.Dec(-1_234_567_890)
   x := value == NEGX                                    'Check for max negative
   if value < 0
     value := ||(value+x)                                'If negative, make positive; adjust for max negative
     Tx("-")                                             'and output sign
-
   i := 1_000_000_000                                    'Initialize divisor
-
   repeat 10                                             'Loop for 10 digits
     if value => i                                                               
       Tx(value / i + "0" + x*(i == 1))                  'If non-zero digit, output digit; adjust for max negative
@@ -114,36 +103,29 @@ PUB Dec(value) | i, x
     elseif result or i == 1
       Tx("0")                                           'If zero digit (or only digit) output it
     i /= 10                                             'Update divisor
-
 PUB Hex(value, digits)
 {{
    Transmit the ASCII string equivalent of a hexadecimal number
    Parameters: value = the numeric hex value to be transmitted
-               digits = the number of hex digits to print                 
+''             digits = the number of hex digits to print                 
    example usage: serial.Hex($AA_FF_43_21, 8)
    expected outcome of example usage call: Will print the string "AAFF4321" to a listening terminal.
 }}
-
   value <<= (8 - digits) << 2
   repeat digits                                         'do it for the number of hex digits being transmitted
     Tx(lookupz((value <-= 4) & $F : "0".."9", "A".."F"))'  Transmit the ASCII value of the hex characters
-
-
 PUB Bin(value, digits)
 {{
    Transmit the ASCII string equivalent of a binary number
    Parameters: value = the numeric binary value to be transmitted
-               digits = the number of binary digits to print                 
+''             digits = the number of binary digits to print                 
    return:     none
    example usage: serial.Bin(%1110_0011_0000_1100_1111_1010_0101_1111, 32)
    expected outcome of example usage call: Will print the string "11100011000011001111101001011111" to a listening terminal.
 }}
-
   value <<= 32 - digits
   repeat digits
     Tx((value <-= 1) & 1 + "0")                         'Transmit the ASCII value of each binary digit
-
-
 DAT
               org 0
 pbj           mov       iptr,par                'Point to timedelay and initialize a bunch of stuff.
