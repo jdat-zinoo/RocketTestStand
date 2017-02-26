@@ -20,8 +20,8 @@
 
 CON
 
-  CR     	= 13            ' Code of character to send for CR
-  LF 		= 10            ' Code of character to send for LF
+  CR            = 13            ' Code of character to send for CR
+  LF            = 10            ' Code of character to send for LF
 
   MAX_BUF       = 256           ' Max. lenght of command line and parameters
   MAX_PROMPT    = 8             ' Max. length of command prompt
@@ -29,7 +29,7 @@ CON
 
 OBJ
 
-  fdc	: "Full-Duplex_COMEngine"
+  fdc   : "Full-Duplex_COMEngine"
 
 VAR
 
@@ -131,18 +131,18 @@ PUB putd(value) | i
 '' // @param                    value                   Decimal value to write to serial line
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	i := 1_000_000_000
+        i := 1_000_000_000
 
-	repeat 10
-		if value => i
-			fdc.writeByte(value / i + "0")
-			value //= i
-			result~~
+        repeat 10
+                if value => i
+                        fdc.writeByte(value / i + "0")
+                        value //= i
+                        result~~
 
-		elseif result or i == 1
-			fdc.writeByte("0")
+                elseif result or i == 1
+                        fdc.writeByte("0")
 
-		i /= 10
+                i /= 10
 
 PUB currentPar
 
@@ -196,19 +196,19 @@ PUB parse(pos) | i, done, inputPtr, foundPos, curPos
 
         bytefill(@parBuf, 0, 8)
 
-	repeat until byte[inputPtr] == 0 or done == true
+        repeat until byte[inputPtr] == 0 or done == true
 
-		if byte[inputPtr] == 32 and not foundPos
+                if byte[inputPtr] == 32 and not foundPos
 
                    if ++curPos == pos
                         foundPos := true
                    else
                         inputPtr++
 
-		elseif foundPos
+                elseif foundPos
 
                    if byte[inputPtr] <> 32 and byte[inputPtr] <> CR and byte[inputPtr] <> LF and byte[inputPtr] <> 0
-			parBuf[i++] := byte[inputPtr]
+                        parBuf[i++] := byte[inputPtr]
                    else
                         done := true
 
@@ -229,12 +229,12 @@ PUB parseAndCheck(pos, errMsg, checkDec)
   if not parse(pos)
     fdc.writeString(errMsg)
     fdc.writeString(string(CR, LF))
-    abort
+    abort true
 
   if checkDec and strToDec(@parBuf) == $FFFFFFFF
     fdc.writeString(errMsg)
     fdc.writeString(string(CR, LF))
-    abort
+    abort true
 
 PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
 
@@ -249,17 +249,17 @@ PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
 
         lenCmdPtr := strsize(cmdPtr)
 
-	if lenCmdPtr > strsize(inputPtr)
-		return false
+        if lenCmdPtr > strsize(inputPtr)
+                return false
 
-	repeat i from 0 to lenCmdPtr - 1
-	  if byte[cmdPtr++] <> byte[inputPtr++]
-	     return false
+        repeat i from 0 to lenCmdPtr - 1
+          if byte[cmdPtr++] <> byte[inputPtr++]
+             return false
 
-	if byte[inputPtr] <> 32 and byte[inputPtr] <> CR and byte[inputPtr] <> LF
-		return false
+        if byte[inputPtr] <> 32 and byte[inputPtr] <> CR and byte[inputPtr] <> LF
+                return false
 
-	return true
+        return true
 
 PRI strToDec(strPtr) : decVal | valid, char, index, multiply
 
@@ -271,14 +271,14 @@ PRI strToDec(strPtr) : decVal | valid, char, index, multiply
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         valid   := false
-	decVal := index := 0
+        decVal := index := 0
 
-	repeat until ((char := byte[strPtr][index++]) == 0)
-		if char => "0" and char =< "9"
-			decVal := decVal * 10 + (char - "0")
+        repeat until ((char := byte[strPtr][index++]) == 0)
+                if char => "0" and char =< "9"
+                        decVal := decVal * 10 + (char - "0")
                         valid := true
-		if byte[strPtr] == "-"
-			decVal := -decVal
+                if byte[strPtr] == "-"
+                        decVal := -decVal
 
         if not valid
           decVal := $FFFFFFFF

@@ -33,10 +33,10 @@ PUB main
 
     result := ps.prompt
     
-    ''if not ps.isEmptyCmd(result)
-    ''  \cmdHandler(result)
-    if \cmdHandler(result) and not ps.isEmptyCmd(result)
-      ps.puts(string("Unknown kommand. Use ? for help.", ps#CR, ps#LF))
+    if ps.isEmptyCmd(result)
+      \cmdHandler(result)
+    ''if \cmdHandler(result) and not ps.isEmptyCmd(result)
+      ''ps.puts(string("Unknown kommand. Use ? for help.", ps#CR, ps#LF))
 
 PRI cmdHandler(cmdLine)
 
@@ -70,7 +70,7 @@ PRI cmdList(forMe)
   '   abort ' returns with error 
   '   
   ' and send to serial with ps.puts(string) function
-  ps.puts(string("List command"))
+  ''ps.puts(string("List command"))
 
   ps.commandHandled
 
@@ -88,7 +88,7 @@ PRI cmdDel(forMe)
   '   abort ' returns with error 
   '   
   ' and send to serial with ps.puts(string) function
-  ps.puts(ps.currentPar)
+  ''ps.puts(ps.currentPar)
 
   ps.commandHandled
 
@@ -106,7 +106,7 @@ PRI cmdCat(forMe)
   '   abort ' returns with error 
   '   
   ' and send to serial with ps.puts(string) function
-  ps.puts(ps.currentPar)
+  ''ps.puts(ps.currentPar)
   
   ps.commandHandled
 
@@ -115,18 +115,18 @@ PRI cmdTime(forMe)
   if not forMe
     return
 
-  if \ps.parseAndCheck(1, string("ttt"), false)
+  if \ps.parseAndCheck(1, string(" "), false)
   '' ps.puts(time and date string)  ' there is no parameter, return current date and time
-     ps.puts(string("It's 2017-03-01 16:00:00 Wed"))
+     ''ps.puts(string("It's 2017-03-01 16:00:00 Wed"))
      ps.commandHandled
      return     
   'datestring=ps.currentPar
-  ps.puts(ps.currentPar)
+  ''ps.puts(ps.currentPar)
   ps.parseAndCheck(2, string("T error:time missing"), false)
   'timestring=ps.currentPar
-  ps.puts(ps.currentPar)
+  ''ps.puts(ps.currentPar)
   ps.parseAndCheck(3, string("T error:day of week"), true)
-  ps.puts(ps.currentPar)
+  ''ps.puts(ps.currentPar)
   'dayofweek=ps.currentParDec
   '
   ' set time to rtc
