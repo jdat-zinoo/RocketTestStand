@@ -1,6 +1,10 @@
 {{
-//
+// Based on 
+// PBnJ_serial: Precision, Basic, no Jitter serial I/O driver.
+// (c) Copyright 2011 Philip C. Pilgrim
+// Modified by JDat
 }}
+
 CON
   IMAX          = 256            'Input buffer size  (must be less than 512, but needn't be a power of 2).
   OMAX          = 256            'Output buffer size (ditto).
@@ -8,6 +12,7 @@ VAR
   long  timedelay,inpmask,outmask
   word  ienqueue, idequeue, oenqueue, odequeue
   byte  ibuffer[IMAX], obuffer[OMAX], cogno
+
 PUB start(ipin, opin, baud)
 '' Start the UART:
 ''   ipin is the input pin.
@@ -59,22 +64,34 @@ PUB lf
 pub crlf
  cr
  lf
+pub lfcr
+  lf
+  cr
 PUB space
   tx(32)  
 PUB str(stringptr)
 '' Send string                    
   repeat strsize(stringptr)
     tx(byte[stringptr++])
-PUB rxLine(stringPtr,stringSize)|a
-    repeat (stringSize-1)
+PUB rxLine(stringPtr,stringSize)|a,b,c
+{{
+    read line for data until cr or lf occures
+}}
+    
+    b:=stringSize-2
+    c:=stringPtr
+    repeat while b>0
         a:=rx
-        if (a==cr) or (a==lf)
+        if ((a==13) or (a==10))
             byte[stringptr]:=a
             stringptr++
-            byte[stringptr]:=0
-            return
+            byte[stringptr]:=0 
+            return c
         byte[stringptr]:=a
         stringptr++
+        b--
+    byte[stringptr]:=13
+    stringptr++    
     byte[stringptr]:=0
 
 PUB Dec(value) | i, x
@@ -279,4 +296,24 @@ oenq          res       1
 ideq          res       1
 optr          res       1
 iptr          res       1
-nxtenq        res       1             
+nxtenq        res       1
+
+DAT
+{{
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                  TERMS OF USE: MIT License
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}}

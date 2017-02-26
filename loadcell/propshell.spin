@@ -22,113 +22,50 @@ CON
   LF            = 10            ' Code of character to send for LF
 
   MAX_BUF       = 256           ' Max. lenght of command line and parameters
-  MAX_PROMPT    = 8             ' Max. length of command prompt
-  MAX_HELPCMD   = 8             ' Max. length of help command
 
 OBJ
 
   fdc   : "my_PBnJ_serial"
 
 VAR
-
-  byte shellPrompt[MAX_PROMPT]  ' Hold the shell prompt
-  byte helpCmd[MAX_HELPCMD]     ' Hold the help command
   byte cmdBuf[MAX_BUF]          ' Buffer to hold the commad line
   byte parBuf[MAX_BUF]          ' Buffer to hold a single parameter of the command line
-  byte enableHelp               ' Determines if help is available
-  byte enablePrompt             ' Determines if prompt is printed
 
-PUB init(aShellPrompt, aHelpCmd, baudRate, rxPin, txPin)
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PUB init(rxPin, txPin, baudRate)
 '' // Initialize the shell
-'' //
-'' // @param                    aShellPromt             String to use as shell prompt or false for no shell prompt
-'' // @param                    aHelpCmd                String which defines the help command or false for no help command
-'' // @param                    baudRate                Serial baudrate to use
 '' // @param                    rxPin                   Pin to use for serial RX
 '' // @param                    txPin                   Pin to use for serial TX
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  shellPrompt := aShellPrompt
-  helpCmd     := aHelpCmd
+'' // @param                    baudRate                Serial baudrate to use
 
   fdc.Start(rxPin, txPin, baudRate)
 
-  if not aHelpCmd
-    enableHelp  := false
-  else
-    enableHelp  := true
-
-  if not aShellPrompt
-    enablePrompt  := false
-  else
-    enablePrompt  := true
-
-PUB commandDef(cmd, cmdDesc, cmdLine)
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PUB commandDef(cmd, cmdLine)
 '' // Define a command
-'' //
 '' // @param                    cmd                     String which defines the command
-'' // @param                    cmdDesc                 Description of the command (used for help), or false if no description
 '' // @param                    cmdLine                 Command line to parse
 '' // @return                                           true if cmdLine matches cmd, false otherwise
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  if subMatches(helpCmd, cmdLine) and enableHelp
-    '' write out command help
-    fdc.Str(string(CR, LF))
-    fdc.Str(cmd)
-    fdc.Str(string(": "))
-    fdc.Str(cmdDesc)
-    fdc.Str(string(CR, LF))
-    return false
-  elseif not subMatches(cmd, cmdLine)
+  ''fdc.Str(cmdLine)
+  if not subMatches(cmd, cmdLine)
     return false
 
   return true
 
 PUB prompt
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-'' // Show promt (if defined), await input
-'' //
 '' // @return                                           input read from serial line
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  if enablePrompt
-    fdc.Str(shellPrompt)
-
   result := fdc.rxLine(@cmdBuf, MAX_BUF)
-  fdc.Str(string(CR))
 
 PUB commandHandled
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Signal that command was handled
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   abort
 
 PUB puts(str)
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Write out string
-'' //
 '' // @param                    str                     String to write to serial line
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   fdc.Str(str)
 
 PUB putd(value) | i
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Write out decimal
-'' //
 '' // @param                    value                   Decimal value to write to serial line
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         i := 1_000_000_000
 
         repeat 10
@@ -143,110 +80,68 @@ PUB putd(value) | i
                 i /= 10
 
 PUB currentPar
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Get last param parsed (as raw string)
-'' //
 '' // @return                                           Last parameter parsed as raw string value
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   return @parBuf
 
 PUB currentParDec
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Get last param parsed (as converted to decimal)
-'' //
 '' // @return                                           Last parameter parsed as decimal value
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   return strToDec(@parBuf)
-
 PUB isEmptyCmd(cmdLine)
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Check if received command line was empty.
-'' //
 '' // @param                    cmdLine                 Command line read (e.g. by promt method)
 '' // @return                                           True ic cmdLine is emtpy, false otherwise
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  if strsize(cmdLine) == 1 or subMatches(helpCmd, cmdLine) or not enableHelp
+  if strsize(cmdLine) == 1
     return true
 
   return false
 
 PUB parse(pos) | i, done, inputPtr, foundPos, curPos
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Parse param from last command line read at given pos.
-'' //
 '' // @param                    pos                     pos (0..m) of parameter to parse
 '' // @return                                           True if parameter was fond at pos, false otherwise
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         inputPtr := @cmdBuf
-
         foundPos := false
         done     := false
         curPos   := 0
         i        := 0
-
         bytefill(@parBuf, 0, 8)
-
         repeat until byte[inputPtr] == 0 or done == true
-
                 if byte[inputPtr] == 32 and not foundPos
-
                    if ++curPos == pos
                         foundPos := true
                    else
                         inputPtr++
-
                 elseif foundPos
-
                    if byte[inputPtr] <> 32 and byte[inputPtr] <> CR and byte[inputPtr] <> LF and byte[inputPtr] <> 0
                         parBuf[i++] := byte[inputPtr]
                    else
                         done := true
-
                 inputPtr++
 
         return done
 
 PUB parseAndCheck(pos, errMsg, checkDec)
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Parse param at given pos and check if it is valid. If check fails, abort is issued.
-'' //
 '' // @param                    pos                     pos (0..m) of parameter to parse
 '' // @param                    errMsg                  Message to write out if param check failed (not found, or not decimal)
 '' // @param                    checkDec                If set to true,check if param is valid deciamal value
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   if not parse(pos)
     fdc.Str(errMsg)
-    fdc.Str(string(CR, LF))
+    fdc.CR
     abort true
-
   if checkDec and strToDec(@parBuf) == $FFFFFFFF
     fdc.Str(errMsg)
-    fdc.Str(string(CR, LF))
+    fdc.CR
     abort true
 
 PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Match a substring. Used to see if a command line starts with a given command.
-'' //
 '' // @param                    cmdPtr                  Pointer to command definition
 '' // @param                    inputPtr                Pointer to whole command line
 '' // @return                                           True if inputPtr (command line) starts with command (cmdPtr), flase
-'' //                                                   otherwise
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         lenCmdPtr := strsize(cmdPtr)
-
         if lenCmdPtr > strsize(inputPtr)
                 return false
 
@@ -260,14 +155,9 @@ PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
         return true
 
 PRI strToDec(strPtr) : decVal | valid, char, index, multiply
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 '' // Convert string to decimal.
-'' //
 '' // @param                    strPtr                  Pointer to string which should be converted to decimal
 '' // @return                                           Decimal value for strPtr
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         valid   := false
         decVal := index := 0
 
@@ -282,7 +172,6 @@ PRI strToDec(strPtr) : decVal | valid, char, index, multiply
           decVal := $FFFFFFFF
 
 DAT
-
 {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                  TERMS OF USE: MIT License
