@@ -64,7 +64,7 @@ PRI cmdList(forMe)
   '   abort ' returns with error 
   '   
   ' and send to serial with ps.puts(string) function
-  ps.puts(string("List command"))
+  ps.puts(string("List command", ps#cr))
 
   ps.commandHandled
 
@@ -73,7 +73,7 @@ PRI cmdDel(forMe)
   if not forMe
     return
 
-  ps.parseAndCheck(1, string("D error:no file specified"), false)
+  ps.parseAndCheck(1, string("D error:no file specified", ps#cr), false)
   
   'filename=ps.currentPar
   ' delete file from sd card here
@@ -83,7 +83,7 @@ PRI cmdDel(forMe)
   '   
   ' and send to serial with ps.puts(string) function
   ps.puts(ps.currentPar)
-
+  ps.puts(string(ps#cr))
   ps.commandHandled
 
 PRI cmdCat(forMe)
@@ -91,7 +91,7 @@ PRI cmdCat(forMe)
   if not forMe
     return
 
-  ps.parseAndCheck(1, string("C error:no file specified"), false)
+  ps.parseAndCheck(1, string("C error:no file specified", ps#cr), false)
   
   'filename=ps.currentPar
   ' ps.puts(filecontents) from sd card here
@@ -101,7 +101,7 @@ PRI cmdCat(forMe)
   '   
   ' and send to serial with ps.puts(string) function
   ps.puts(ps.currentPar)
-  
+  ps.puts(string(ps#cr))  
   ps.commandHandled
 
 PRI cmdTime(forMe)
@@ -109,18 +109,21 @@ PRI cmdTime(forMe)
   if not forMe
     return
 
-  if \ps.parseAndCheck(1, string(" "), false)
+  if \ps.parseAndCheck(1, false, false)
   '' ps.puts(time and date string)  ' there is no parameter, return current date and time
-     ps.puts(string("It's 2017-03-01 16:00:00 Wed"))
+     ps.puts(string("It's 2017-03-01 16:00:00 Wed", ps#cr))
      ps.commandHandled
      return     
   'datestring=ps.currentPar
   ps.puts(ps.currentPar)
-  ps.parseAndCheck(2, string("T error:time missing"), false)
+  ps.puts(string(ps#cr))  
+  ps.parseAndCheck(2, string("T error:time missing", ps#cr), false)
   'timestring=ps.currentPar
   ps.puts(ps.currentPar)
-  ps.parseAndCheck(3, string("T error:day of week"), true)
+  ps.puts(string(ps#cr))  
+  ps.parseAndCheck(3, string("T error:day of week", ps#cr), true)
   ps.puts(ps.currentPar)
+  ps.puts(string(ps#cr))  
   'dayofweek=ps.currentParDec
   '
   ' set time to rtc

@@ -21,7 +21,7 @@ CON
   CR            = 13            ' Code of character to send for CR
   LF            = 10            ' Code of character to send for LF
 
-  MAX_BUF       = 256           ' Max. lenght of command line and parameters
+  MAX_BUF       = 32           ' Max. lenght of command line and parameters
 
 OBJ
 
@@ -128,12 +128,12 @@ PUB parseAndCheck(pos, errMsg, checkDec)
 '' // @param                    errMsg                  Message to write out if param check failed (not found, or not decimal)
 '' // @param                    checkDec                If set to true,check if param is valid deciamal value
   if not parse(pos)
-    fdc.Str(errMsg)
-    fdc.CR
+    if errmsg<>false
+      fdc.Str(errMsg)
     abort true
   if checkDec and strToDec(@parBuf) == $FFFFFFFF
-    fdc.Str(errMsg)
-    fdc.CR
+    if errmsg<>false
+      fdc.Str(errMsg)
     abort true
 
 PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr

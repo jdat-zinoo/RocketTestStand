@@ -6,7 +6,7 @@
 }}
 
 CON
-  IMAX          = 256            'Input buffer size  (must be less than 512, but needn't be a power of 2).
+  IMAX          = 64             'Input buffer size  (must be less than 512, but needn't be a power of 2).
   OMAX          = 256            'Output buffer size (ditto).
 VAR
   long  timedelay,inpmask,outmask
