@@ -18,12 +18,17 @@ OBJ
   ps    : "propshell"
 VAR
   '' none
+  long shellstack[64]
 PUB main
+    cognew(runshell,@shellstack)
+    
+pub runshell
   ps.init(RX_PIN, TX_PIN,BAUD_RATE)
   repeat
     result := ps.prompt
     if not ps.isEmptyCmd(result)
       \cmdHandler(result)
+
 PRI cmdHandler(cmdLine)
 '' // Command handler. All shell commands are defined here.
 '' // @param                    cmdLine                 Input to parse (from promt)

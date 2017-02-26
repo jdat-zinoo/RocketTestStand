@@ -21,7 +21,7 @@ CON
   CR            = 13            ' Code of character to send for CR
   LF            = 10            ' Code of character to send for LF
 
-  MAX_BUF       = 32           ' Max. lenght of command line and parameters
+  MAX_BUF       = 64           ' Max. lenght of command line and parameters
 OBJ
   fdc   : "my_PBnJ_serial"
 VAR
