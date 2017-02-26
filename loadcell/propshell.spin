@@ -1,12 +1,8 @@
 {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // PROPELLER COMMAND SHELL
-//
-// See included examples for usage.
-//
 // Author: Stefan Wendler
 // Updated: 2013-10-14
-// Designed For: P8X32A
 // Version: 1.0
 //
 // Copyright (c) 2013 Stefan Wendler
@@ -15,6 +11,8 @@
 // Update History:
 //
 // v1.0 - Initial release       - 2013-10-14
+//
+// customm patches by JDat
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }}
 
@@ -29,7 +27,7 @@ CON
 
 OBJ
 
-  fdc   : "Full-Duplex_COMEngine"
+  fdc   : "my_PBnJ_serial"
 
 VAR
 
@@ -55,7 +53,7 @@ PUB init(aShellPrompt, aHelpCmd, baudRate, rxPin, txPin)
   shellPrompt := aShellPrompt
   helpCmd     := aHelpCmd
 
-  fdc.COMEngineStart(rxPin, txPin, baudRate)
+  fdc.Start(rxPin, txPin, baudRate)
 
   if not aHelpCmd
     enableHelp  := false
@@ -80,11 +78,11 @@ PUB commandDef(cmd, cmdDesc, cmdLine)
 
   if subMatches(helpCmd, cmdLine) and enableHelp
     '' write out command help
-    fdc.writeString(string(CR, LF))
-    fdc.writeString(cmd)
-    fdc.writeString(string(": "))
-    fdc.writeString(cmdDesc)
-    fdc.writeString(string(CR, LF))
+    fdc.Str(string(CR, LF))
+    fdc.Str(cmd)
+    fdc.Str(string(": "))
+    fdc.Str(cmdDesc)
+    fdc.Str(string(CR, LF))
     return false
   elseif not subMatches(cmd, cmdLine)
     return false
@@ -100,10 +98,10 @@ PUB prompt
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   if enablePrompt
-    fdc.writeString(shellPrompt)
+    fdc.Str(shellPrompt)
 
-  result := fdc.readString(@cmdBuf, MAX_BUF)
-  fdc.writeString(string(CR))
+  result := fdc.rxLine(@cmdBuf, MAX_BUF)
+  fdc.Str(string(CR))
 
 PUB commandHandled
 
@@ -121,7 +119,7 @@ PUB puts(str)
 '' // @param                    str                     String to write to serial line
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  fdc.writeString(str)
+  fdc.Str(str)
 
 PUB putd(value) | i
 
@@ -135,12 +133,12 @@ PUB putd(value) | i
 
         repeat 10
                 if value => i
-                        fdc.writeByte(value / i + "0")
+                        fdc.tx(value / i + "0")
                         value //= i
                         result~~
 
                 elseif result or i == 1
-                        fdc.writeByte("0")
+                        fdc.tx("0")
 
                 i /= 10
 
@@ -227,13 +225,13 @@ PUB parseAndCheck(pos, errMsg, checkDec)
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   if not parse(pos)
-    fdc.writeString(errMsg)
-    fdc.writeString(string(CR, LF))
+    fdc.Str(errMsg)
+    fdc.Str(string(CR, LF))
     abort true
 
   if checkDec and strToDec(@parBuf) == $FFFFFFFF
-    fdc.writeString(errMsg)
-    fdc.writeString(string(CR, LF))
+    fdc.Str(errMsg)
+    fdc.Str(string(CR, LF))
     abort true
 
 PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
