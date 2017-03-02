@@ -40,10 +40,19 @@ PUB commandDef(cmd, cmdLine)
 '' // @return                                           true if cmdLine matches cmd, false otherwise
   if not subMatches(cmd, cmdLine)
     return false
-  return true
-PUB prompt
+  return true  
+PUB stringToUpperCase(characters) '' 4 Stack Longs
+'' // Promotes all lower case characters in the set of ("a","z") to their upper case equivalents.
+'' // Characters - A pointer to a string of characters to convert to uppercase.
+  repeat strsize(characters--)
+    result := byte[++characters]
+    if((result => "a") and (result =< "z"))
+      byte[characters] := (result - 32)
+      
+PUB prompt 
 '' // @return                                           input read from serial line
   result := fdc.rxLine(@cmdBuf, MAX_BUF)
+  stringToUpperCase(@cmdBuf)
 PUB commandHandled
 '' // Signal that command was handled
   abort
