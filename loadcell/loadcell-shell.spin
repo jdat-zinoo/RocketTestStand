@@ -18,7 +18,8 @@ OBJ
   ps    : "propshell"
 VAR
   '' none
-  long shellstack[64]
+  long shellstack[128]
+  ''word rtbuffer[10_000]
 PUB main
     cognew(runshell,@shellstack)
     
@@ -37,10 +38,10 @@ PRI cmdHandler(cmdLine)
   '' Each ps.commandDef takes tro parameters:
   '' - 1  name of command
   '' - 2  command line to check command against
-  cmdList(ps.commandDef(string("l"), cmdLine))
-  cmdDel(ps.commandDef(string("d"), cmdLine))
-  cmdCat(ps.commandDef(string("c"), cmdLine))
-  cmdTime(ps.commandDef(string("t"), cmdLine))
+  cmdList(ps.commandDef(string("LIST"), cmdLine))
+  cmdDel(ps.commandDef(string("DEL"), cmdLine))
+  cmdCat(ps.commandDef(string("CAT"), cmdLine))
+  cmdTime(ps.commandDef(string("TIME"), cmdLine))
   return true
 PRI cmdList(forMe)
   if not forMe

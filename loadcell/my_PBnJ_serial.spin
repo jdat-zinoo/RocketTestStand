@@ -87,7 +87,7 @@ PUB rxLine(stringPtr,stringSize)|a,b,c
         b--
     byte[stringptr]:=13
     stringptr++    
-    byte[stringptr]:=0
+    byte[stringptr]:=0    
 PUB Dec(value) | i, x
 ''   example usage: serial.Dec(-1_234_567_890)
   x := value == NEGX                                    'Check for max negative
