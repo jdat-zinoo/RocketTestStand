@@ -1,36 +1,38 @@
 *) All lines ends with "\n" or "\r" or "\n\r" or "\r\n", tbd
-*) all commands and file names are case insesitive (prefear lower case)
+*) all commands and file names are case insesitive (prefear upper case)
 *) serial baudrate 115200 bit/sec or more
 
 *) From ESP (web,serial) to propeller
-L - list files
+LIST - list files
 		repelay from propeller
 		"L 2"
 		"file1.txt"
 		"file2.txt" where:
 				L - answer to list coomand
 				2 - number of lines(files) in replay
-D file1.txt - delete file
+DEL file1.txt - delete file
 		replay from propeller
 		"D file.txt" or "D error: no file" or "D error: SD failed"
-C file1.txt - cat (list) file contents
+CAT file1.txt - cat (list) file contents
 		replay from propeller
 		"C 12345" or "C error: no file" or "C error: SD failed"
 		12345 - file size
 		
-T 2017-02-17 14:02:00 0 - set time and date
+TIME 2017-02-17 14:02:00 0 - set time and date
 		replay from propeller
 		T 2017-02-17 14:02:00 0 or "T error: incorrect date"
 						last digit (0-6 or 1-7, tbd) day of week
+		if no parameter, than propeller return local time
+		TIME 2017-02-17 14:02:00 0
 
 *) From propeller to ESP (Web, serial)
-R 0 1234 - realtime data return
+R 9999 1234 - realtime data return
 			0 - number of sample since log started (0-10 000)
 			1234 - value (-32000 to 32000)
 			
 			will start to send automatically after rocket motor launch
-			ESP must get all these data and covert to XML/jSon and send to web page near real time
+			ESP must get all these data and covert to XML/jSon/CSV and send to web page near real time
 
 S 1234 - current sensor value while in standby
 			will send 1000 times per second while in standby
-			ESP sometimes must read last value and sent to web page for user to see sensor status in near real time
+			ESP sometimes (5x per second) must read last value and sent to web page for user to see sensor status in near real time
