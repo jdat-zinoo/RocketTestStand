@@ -1,0 +1,19 @@
+<div id="chart"></div>
+
+<script>
+
+var data = [[]];
+
+var graph = new Rickshaw.Graph( {
+        element: document.querySelector("#chart"),
+        width: 580,
+        height: 250,
+        series: [ {
+                color: 'steelblue',
+                data: data
+        } ]
+} );
+
+graph.render();
+
+</script>

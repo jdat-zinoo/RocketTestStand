@@ -1,0 +1,13 @@
+{
+  "main": {
+    "template": "views/main_view.html",
+    "nav_id": "nav_main",
+    "nav_text": "Main",
+    "default": true
+  },
+  "filesystem": {
+    "template": "views/filesystem_view.html",
+    "nav_id": "nav_filesystem",
+    "nav_text": "Filesystem"
+  }
+}

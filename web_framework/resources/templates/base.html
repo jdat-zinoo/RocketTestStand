@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Rocket Test</title>
+
+    <link href="{{ static_url('css/main.css') }}" rel="stylesheet">
+    <script>
+        var websocket_url = "{{ websocket_url }}";
+    </script>
+    <script src="{{ static_url('js/main.js') }}"></script>
+</head>
+
+<body>
+
+<div class="container">
+    {% module Template('includes/header.html', views=views) %}
+
+    {% block body_content %}{% end %}
+
+    {% module Template('includes/footer.html') %}
+
+</div> <!-- /container -->
+</body>
+</html>
