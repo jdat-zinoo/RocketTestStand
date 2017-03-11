@@ -38,86 +38,24 @@ CON
 OBJ
   ps    : "propshell"
   sd    : "DS1307_SD-MMC_FATEngine"
-  debug : "my_PBnJ_serial"
+  ''debug : "my_PBnJ_serial"
   adc   : "I2C PASM driver v1.4"
 VAR
   '' none
-  long shellstack[128]
+  long shellstack[512]
   word rtbuffer[10_000]
   
 PUB main | errorNumber, errorString 
-    'cognew(runshell,@shellstack)
-    debug.Start(rx_Pin, tx_Pin, baud_Rate)
-{    
-    repeat
-        if ina[launchpin]
-            debug.tx("X")
+    
+    ''debug.Start(rx_Pin, tx_Pin, baud_Rate)
+    cognew(runshell,@shellstack)        
 
-        else
-            debug.tx(".")
-        debug.cr
-        waitcnt(CLKFREQ/10+cnt)
-}  
-  sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock)
-
-  errorString := \code ' Returns the address of the error string or null. 
-  errorNumber := sd.partitionError ' Returns the error number or zero. 
-  if(errorNumber) ' Light a LED if an error occurs. 
-        debug.str (string("fat engine error: "))
-        debug.str (errorstring)
-        debug.tx(9)
-        debug.Dec (errorNumber)
-        debug.cr
-        repeat
-  else
-    'sd.rtcWriteTime (00, 05, 15, 6, 11, 3, 2017)
-    'repeat
-    debug.str (string("Mound complete"))    
-    debug.cr
-    'debug.str(string("RTC time is: "))
-    'debug.bin( sd.readClock,32)
-    'debug.cr
-    howToUseListEntries    
-    errorString:=\code1
-    errorNumber := sd.partitionError
-    if(errorNumber) ' Light a LED if an error occurs. 
-        debug.str (string("open for write error: "))
-       debug.str(errorstring)
-       debug.tx(9)
-       debug.Dec(errorNumber)
-       debug.cr
-       repeat
-    errorString:=\code2
-    errorNumber := sd.partitionError
-    if(errorNumber) ' Light a LED if an error occurs. 
-        debug.str (string("write data error: "))
-        debug.str(errorstring)
-        debug.tx(9)
-        debug.Dec(errorNumber)
-        debug.cr
-        repeat
-    else
-        debug.str (string("write data complete"))            
-        debug.cr
-  sd.flushData
-  sd.closefile
-  repeat
-
-PRI code2
-  sd.writeString(string("this is testing",13,10))
-PRI code1
-  sd.openFile(sd.newFile(string("text.txt")), "W")
-PRI code ' Put the file system calls in a separate method to trap aborts. 
-  sd.mountPartition(0) ' Mount the default partition 0.  Can be 0 - 3. 
-                        ' 
 PRI howToUseListEntries | entryName 
   sd.listEntries("W") ' Wrap around. 
   repeat while(entryName := sd.listEntries("N")) 
-    ' "entryName" points to the string name of the next entry. 
-    ' Save the information returned by the below methods. 
-    ' Or print the information returned by the belowmethods. 
-    debug.str(sd.listName)
-    debug.tx(9)
+    ps.puts(sd.listName)
+    ps.tx(9)
+{
     debug.Dec(sd.listSize)     
     debug.tx(9)
     debug.Dec(sd.listCreationYear)
@@ -140,49 +78,61 @@ PRI howToUseListEntries | entryName
     debug.tx(".")
     debug.Dec(sd.listAccessDay) 
     debug.tx(9)
-
-    debug.Dec(sd.listModificationYear)
-    debug.tx(".")
-    debug.Dec(sd.listModificationMonth) 
-    debug.tx(".")
-    debug.Dec(sd.listModificationDay)
-    debug.tx(".")
-    debug.tx(9)
+}
+    ps.putd(sd.listModificationYear)
+    ps.tx(".")
+    ps.putd(sd.listModificationMonth) 
+    ps.tx(".")
+    ps.putd(sd.listModificationDay)
+    ps.tx(".")
+    ps.tx(9)
     
-    debug.Dec(sd.listModificationHours)
-    debug.tx(":")
-    debug.Dec(sd.listModificationMinutes)
-    debug.tx(":")
-    debug.Dec(sd.listModificationSeconds)
-    debug.tx(9)
-
+    ps.putd(sd.listModificationHours)
+    ps.tx(":")
+    ps.putd(sd.listModificationMinutes)
+    ps.tx(":")
+    ps.putd(sd.listModificationSeconds)
+    ps.tx(9)
+{
     sd.listIsReadOnly 
     sd.listIsHidden 
     sd.listIsSystem 
     sd.listIsDirectory 
     sd.listIsArchive 
+}
+    ps.crr
 
-    debug.cr
+pub runshell | errorNumber, errorString 
+    ps.init(RX_PIN, TX_PIN, BAUD_RATE)
     
-{{
-    original code
-}}    
-pub runshell
-  ps.init(RX_PIN, TX_PIN,BAUD_RATE)
+    ps.puts(string("serial init"))
+    ps.crr
+    ''repeat
+    
+    
+    sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock) 
+    errorString := \sd.mountPartition(0) ' Returns the address of the error string or null. 
+    errorNumber := sd.partitionError ' Returns the error number or zero. 
+    if(errorNumber) ' Light a LED if an error occurs.     
+        ps.puts(string("fat engine error: "))
+        ps.puts (errorstring)
+        ps.tx(9)
+        ps.puts (errorNumber)
+        ps.crr
+        repeat
+    else
+        ps.puts(string("RTC: "))
+        ps.bin(sd.readClock,32)
+        ps.crr
 
-  repeat
-    result := ps.prompt
-    if not ps.isEmptyCmd(result)
-      \cmdHandler(result)
+        ps.puts(string("SD mount complete"))
+        ps.crr
+        repeat
+            result := ps.prompt
+            if not ps.isEmptyCmd(result)
+              \cmdHandler(result)
 
 PRI cmdHandler(cmdLine)
-'' // Command handler. All shell commands are defined here.
-'' // @param                    cmdLine                 Input to parse (from promt)
-'' // @return                                           ture if cmdLine was NOT handled
-  '' Each command needs to have a single parameter: the result of ps.commandDef.
-  '' Each ps.commandDef takes tro parameters:
-  '' - 1  name of command
-  '' - 2  command line to check command against
   cmdList(ps.commandDef(string("LIST"), cmdLine))
   cmdDel(ps.commandDef(string("DEL"), cmdLine))
   cmdCat(ps.commandDef(string("CAT"), cmdLine))
@@ -193,12 +143,13 @@ PRI cmdList(forMe)
     return
   ''ps.puts(string("got"))
   ' get dir list from sd card here
+  howToUseListEntries    
   ' if error listing
   '   ps.puts(string("L error:SD card error"))
   '   abort ' returns with error 
   '   
   ' and send to serial with ps.puts(string) function
-  ps.puts(string("List command", ps#cr))
+  ''ps.puts(string("List command", ps#cr))
   ps.commandHandled
 PRI cmdDel(forMe)
   if not forMe

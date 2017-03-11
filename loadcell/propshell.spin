@@ -56,6 +56,12 @@ PUB prompt
 PUB commandHandled
 '' // Signal that command was handled
   abort
+pub tx(data)
+    fdc.tx(data)
+pub crr
+    fdc.cr
+pub bin(value,digits)
+    fdc.bin(value,digits)
 PUB puts(str)
 '' // Write out string
 '' // @param                    str                     String to write to serial line
@@ -63,6 +69,7 @@ PUB puts(str)
 PUB putd(value) | i
 '' // Write out decimal
 '' // @param                    value                   Decimal value to write to serial line
+
         i := 1_000_000_000
         repeat 10
                 if value => i
@@ -74,6 +81,8 @@ PUB putd(value) | i
                         fdc.tx("0")
 
                 i /= 10
+
+    ''fdc.dec(value)
 PUB currentPar
 '' // Get last param parsed (as raw string)
 '' // @return                                           Last parameter parsed as raw string value
