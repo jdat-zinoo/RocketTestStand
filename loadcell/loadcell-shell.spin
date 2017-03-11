@@ -26,12 +26,15 @@ CON
   rtcSDApin=4
   rtcSCLpin=3
   I2CLock=-1
+  
   ''ADC setting
   ''adcSDApin=29
   ''adcSCLpin=28
 
   ''launch pin
   launchPin=23
+  'status led
+  'statusLedPin=-1
 OBJ
   ps    : "propshell"
   sd    : "DS1307_SD-MMC_FATEngine"
@@ -40,12 +43,12 @@ OBJ
 VAR
   '' none
   long shellstack[128]
-  ''word rtbuffer[10_000]
+  word rtbuffer[10_000]
   
 PUB main | errorNumber, errorString 
     'cognew(runshell,@shellstack)
     debug.Start(rx_Pin, tx_Pin, baud_Rate)
-    
+{    
     repeat
         if ina[launchpin]
             debug.tx("X")
@@ -54,7 +57,7 @@ PUB main | errorNumber, errorString
             debug.tx(".")
         debug.cr
         waitcnt(CLKFREQ/10+cnt)
-  
+}  
   sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock)
 
   errorString := \code ' Returns the address of the error string or null. 

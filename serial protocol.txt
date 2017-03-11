@@ -1,6 +1,15 @@
 *) All lines ends with "\n" or "\r" or "\n\r" or "\r\n", tbd
 *) all commands and file names are case insesitive
 *) serial baudrate 115200 bit/sec or more
+*) all files ar in DOS format 8.3 - File name max 8 char, extension 3 char
+	uppercase or lovercase chars (automaticaly transformed to uppercase) A-Z, a-z
+	all file name return are in uppercase only
+	numbers 0-9
+	Simbols ! # $ % & ' ( ) - @ ^ _ ` { } ~ are allowed, but not recomended
+	All others cars are banned
+	Directories are not allowed
+	All files are stored in /SDcard/LOADCELL directory
+	Optional extension: web page files for ESP are stored in /SDcard/WEB folder
 
 *) From ESP (web,serial) to propeller
 LIST - list files
