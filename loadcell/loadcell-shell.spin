@@ -105,8 +105,8 @@ PRI howToUseListEntries | entryName
 pub runshell | errorNumber, errorString 
     ps.init(RX_PIN, TX_PIN, BAUD_RATE)
     
-    ps.puts(string("serial init"))
-    ps.crr
+    ''ps.puts(string("serial init"))
+    ''ps.crr
     ''repeat
     
     
@@ -114,19 +114,23 @@ pub runshell | errorNumber, errorString
     errorString := \sd.mountPartition(0) ' Returns the address of the error string or null. 
     errorNumber := sd.partitionError ' Returns the error number or zero. 
     if(errorNumber) ' Light a LED if an error occurs.     
+{
         ps.puts(string("fat engine error: "))
         ps.puts (errorstring)
         ps.tx(9)
         ps.puts (errorNumber)
         ps.crr
+}
         repeat
     else
+ {
         ps.puts(string("RTC: "))
         ps.bin(sd.readClock,32)
         ps.crr
 
         ps.puts(string("SD mount complete"))
         ps.crr
+}
         repeat
             result := ps.prompt
             if not ps.isEmptyCmd(result)
