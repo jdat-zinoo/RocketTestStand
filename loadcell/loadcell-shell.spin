@@ -36,6 +36,7 @@ OBJ
   ps    : "propshell"
   sd    : "DS1307_SD-MMC_FATEngine"
   debug : "my_PBnJ_serial"
+  adc   : "I2C PASM driver v1.4"
 VAR
   '' none
   long shellstack[128]
@@ -53,7 +54,8 @@ PUB main | errorNumber, errorString
             debug.tx(".")
         debug.cr
         waitcnt(CLKFREQ/10+cnt)
-    sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock)
+  
+  sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock)
 
   errorString := \code ' Returns the address of the error string or null. 
   errorNumber := sd.partitionError ' Returns the error number or zero. 
