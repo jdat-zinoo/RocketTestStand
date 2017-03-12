@@ -44,11 +44,11 @@ CAT file1.txt - cat (list) file contents
 			12345 - file size
 		data form file
 		EOF character
-TIME 2017-02-17 14:02:00  - set time and date
+TIME 2017 2 17 14 2 0 7- set time and date
 		replay from propeller
-		TIME 2017-02-17 14:02:00 0 or "TIME error: incorrect date"
+		TIME 2017-02-17 14:02:00 7 or "TIME error: " and description
 		if no parameter, than propeller return local time
-		TIME 2017-02-17 14:02:00 
+		7 - (last digit) day of week (1-7)
 		NewLine Character
 
 		system resolution 2 seconds, because of FAT library limitations, can be fixed on v2.0
