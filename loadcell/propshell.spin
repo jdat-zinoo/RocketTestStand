@@ -59,9 +59,11 @@ PUB commandHandled
 pub tx(data)
     fdc.tx(data)
 pub crr
-    fdc.cr
+    fdc.lf
+{
 pub bin(value,digits)
     fdc.bin(value,digits)
+}
 PUB puts(str)
 '' // Write out string
 '' // @param                    str                     String to write to serial line

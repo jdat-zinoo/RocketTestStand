@@ -9,33 +9,50 @@
 	All others chars are banned
 	Directories are not allowed
 	maximum files in direcory: less than 512
-	All files are stored in /SDcard/LOADCELL directory
-	Optional extension: web page files for ESP are stored in /SDcard/WEB folder
+
+*)	Optional extension: web page files for ESP
+	web files aren't listed in LIST command
+	commands:
+		GET filename
+		PUT filename
+	
+*)  NewLine Character 0x13
+*)  EOF Character 0x4
+*)  Break transfer Character 0x18
+
+*) If propeller need break current command execution (due to launch) than propeller send "Break transfer" character
 
 *) From ESP (web,serial) to propeller
 LIST - list files
 		repelay from propeller
 		"LIST 2"
-		"file1.txt"
+		"file1.txt 1000 2017.03.01. 18:15:02"
 		"file2.txt" where:
-				L - answer to list coomand
+				LIST - answer to list coomand
 				2 - number of lines(files) in replay
+				1000 - file size
+				2017.03.01. - last access date
+				18:15:02 - last access time
+		EOF character
 DEL file1.txt - delete file
 		replay from propeller
 		"DEL file.txt" or "DEL error: no file" or "DEL error: SD failed"
+		NewLine Character
 CAT file1.txt - cat (list) file contents
 		replay from propeller
 		"CAT 12345" or "CAT error: no file" or "CAT error: SD failed"
-		12345 - file size
-		
-TIME 2017-02-17 14:02:00 0 - set time and date
+			12345 - file size
+		data form file
+		EOF character
+TIME 2017-02-17 14:02:00  - set time and date
 		replay from propeller
 		TIME 2017-02-17 14:02:00 0 or "TIME error: incorrect date"
-						last digit (0-6 or 1-7, tbd) day of week
 		if no parameter, than propeller return local time
-		TIME 2017-02-17 14:02:00 0
+		TIME 2017-02-17 14:02:00 
+		NewLine Character
 
-
+		system resolution 2 seconds, because of FAT library limitations, can be fixed on v2.0
+		
 *) From propeller to ESP (Web, serial)
 Rxxxxyyyy - realtime data return			
 			xxxx - number of sample since log started (0-9999)

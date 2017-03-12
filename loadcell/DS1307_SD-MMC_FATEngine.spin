@@ -2135,7 +2135,7 @@ PRI readWriteFATBlock(cluster, readWrite) ' 17 Stack Longs
     readWriteBlock(cluster, readWrite)
     cluster += FATSectorSize
 
-pub readClock ' 10 Stack Longs
+pri readClock ' 10 Stack Longs
 
   if(cardClockID)
     ifnot(rtc.readTime)
@@ -2145,6 +2145,9 @@ pub readClock ' 10 Stack Longs
     currentDate := (rtc.clockDate | (rtc.clockMonth << 5) | ((rtc.clockYear - 1_980) << 9))
   return currentDate
 
+pub rtcGet
+    readClock
+    return @currentTime
 PRI readWriteBlock(address, command) ' 12 Stack Longs
 
   CIDPointer := @CIDRegisterCopy
