@@ -1,38 +1,68 @@
 *) All lines ends with "\n" or "\r" or "\n\r" or "\r\n", tbd
-*) all commands and file names are case insesitive (prefear upper case)
+*) all commands and file names are case insesitive
 *) serial baudrate 115200 bit/sec or more
+*) all files ar in DOS format 8.3 - File name max 8 char, extension 3 char
+	uppercase or lovercase chars (automaticaly transformed to uppercase) A-Z, a-z
+	all file name return are in uppercase only
+	numbers 0-9
+	Simbols ! # $ % & ' ( ) - @ ^ _ ` { } ~ are allowed, but not recomended
+	All others chars are banned
+	Directories are not allowed
+	maximum files in direcory: less than 512
+
+*)	Optional extension: web page files for ESP
+	web files aren't listed in LIST command
+	commands:
+		GET filename
+		PUT filename
+	
+*)  NewLine Character 0x13
+*)  EOF Character 0x4
+*)  Break transfer Character 0x18
+
+*) If propeller need break current command execution (due to launch) than propeller send "Break transfer" character
 
 *) From ESP (web,serial) to propeller
 LIST - list files
 		repelay from propeller
-		"L 2"
-		"file1.txt"
+		"LIST 2"
+		"file1.txt 1000 2017.03.01. 18:15:02"
 		"file2.txt" where:
-				L - answer to list coomand
+				LIST - answer to list coomand
 				2 - number of lines(files) in replay
+				1000 - file size
+				2017.03.01. - last access date
+				18:15:02 - last access time
+		EOF character
 DEL file1.txt - delete file
 		replay from propeller
-		"D file.txt" or "D error: no file" or "D error: SD failed"
+		"DEL file.txt" or "DEL error: no file" or "DEL error: SD failed"
+		NewLine Character
 CAT file1.txt - cat (list) file contents
 		replay from propeller
-		"C 12345" or "C error: no file" or "C error: SD failed"
-		12345 - file size
-		
-TIME 2017-02-17 14:02:00 0 - set time and date
+		"CAT 12345" or "CAT error: no file" or "CAT error: SD failed"
+			12345 - file size
+		data form file
+		EOF character
+TIME 2017 2 17 14 2 0 7- set time and date
 		replay from propeller
-		T 2017-02-17 14:02:00 0 or "T error: incorrect date"
-						last digit (0-6 or 1-7, tbd) day of week
+		TIME 2017-02-17 14:02:00 7 or "TIME error: " and description
 		if no parameter, than propeller return local time
-		TIME 2017-02-17 14:02:00 0
+		7 - (last digit) day of week (1-7)
+		NewLine Character
 
+		system resolution 2 seconds, because of FAT library limitations, can be fixed on v2.0
+		
 *) From propeller to ESP (Web, serial)
-R 9999 1234 - realtime data return
-			0 - number of sample since log started (0-10 000)
-			1234 - value (-32000 to 32000)
-			
+Rxxxxyyyy - realtime data return			
+			xxxx - number of sample since log started (0-9999)
+			yyyy - value (0000 to 9999)			
+			example R99991234 - sample: 9999 value: 1234
 			will start to send automatically after rocket motor launch
 			ESP must get all these data and covert to XML/jSon/CSV and send to web page near real time
 
-S 1234 - current sensor value while in standby
+Syyyy - current sensor value while in standby
+			yyyy - value (0000 to 9999)			
 			will send 1000 times per second while in standby
+			example S1234
 			ESP sometimes (5x per second) must read last value and sent to web page for user to see sensor status in near real time

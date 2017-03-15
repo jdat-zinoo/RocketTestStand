@@ -180,7 +180,7 @@ CON
     } Directory_Link_Missing, Directory_Not_Empty, {
     } Not_A_Directory, Not_A_File
 
-OBJ  rtc: "DS1307_RTCEngine.spin"
+OBJ  rtc: "DS1307_RTCEngine"
 
 VAR long dataStructureAddress[0]
 
@@ -196,6 +196,8 @@ VAR long dataStructureAddress[0]
   byte OEMName[9], fileSystemTypeString[9], unformattedNameBuffer[13], formattedNameBuffer[12]
   byte volumeLabel[12], directoryEntryCache[32], dataBlock[512], CIDRegisterCopy[16]
 
+PUB rtcWriteTime(second, minute, hour, day, date, month, year)
+    rtc.WriteTime(second, minute, hour, day, date, month, year)
 PUB readByte '' 35 Stack Longs
 
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2133,7 +2135,7 @@ PRI readWriteFATBlock(cluster, readWrite) ' 17 Stack Longs
     readWriteBlock(cluster, readWrite)
     cluster += FATSectorSize
 
-PRI readClock ' 10 Stack Longs
+pri readClock ' 10 Stack Longs
 
   if(cardClockID)
     ifnot(rtc.readTime)
@@ -2143,6 +2145,9 @@ PRI readClock ' 10 Stack Longs
     currentDate := (rtc.clockDate | (rtc.clockMonth << 5) | ((rtc.clockYear - 1_980) << 9))
   return currentDate
 
+pub rtcGet
+    readClock
+    return @currentTime
 PRI readWriteBlock(address, command) ' 12 Stack Longs
 
   CIDPointer := @CIDRegisterCopy
