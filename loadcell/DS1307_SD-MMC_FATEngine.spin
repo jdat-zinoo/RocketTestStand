@@ -640,7 +640,7 @@ PUB deleteEntry(entryPathName) | backupCurrentSector, backupCurrentByte '' 40 St
     readWriteCurrentSector("W")
     destroyClusterChain(readDIRCluster)
   unlockFileSystem
-
+{
 PUB changeAttributes(entryPathName, newAttributes) '' 39 Stack Longs
 
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -730,7 +730,7 @@ PUB moveEntry(oldEntryPathName, newEntryPathName) | sector, cluster, directoryEn
       writeDIRCluster(newEntryPathName)
       readWriteCurrentSector("W")
   unlockFileSystem
-
+}
 PUB newFile(filePathName) '' 38 Stack Longs
 
 '' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

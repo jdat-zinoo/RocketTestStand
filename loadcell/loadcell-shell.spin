@@ -41,8 +41,8 @@ CON
     charBreak = $18
 
 dat
-    dataFolder  byte    "/LOADCELL",0
     errorWord   byte    "error: ",0
+    dataFolder  byte    "/LOADCELL",0
 ''    webFolder   byte    "/WEB",0
 OBJ
   ps    : "propshell"
@@ -155,6 +155,7 @@ PRI ListFiles | entryName, count
   ps.putd(count)
   if (count==0)
         return
+  ps.crr
   repeat while(entryName := sd.listEntries("N"))     
     if NOT sd.listIsDirectory
         ps.puts(trim(sd.listName))
@@ -205,7 +206,7 @@ PRI ListFiles | entryName, count
         sd.listIsDirectory 
         sd.listIsArchive 
     }
-    ps.crr
+     ps.crr
 
 PRI cmdList(forMe)
   if not forMe
