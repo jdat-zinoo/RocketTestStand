@@ -40,8 +40,9 @@ CON
     charEOF = $04
     charBreak = $18
 
-    ''dataFolder = "LOADCELL"
-    ''webFolder = "WEB"
+dat
+    dataFolder  byte    "/LOADCELL",0
+    webFolder   byte    "/WEB",0
 OBJ
   ps    : "propshell"
   sd    : "DS1307_SD-MMC_FATEngine"
@@ -49,7 +50,9 @@ OBJ
   adc   : "I2C PASM driver v1.4"
 VAR
   long shellstack[128]
-  word rtbuffer[10_000]
+  ''word rtbuffer[10_000]
+  byte filename [26]
+  byte filebuffer[512]
 PUB main | errorNumber, errorString     
     ''debug.Start(rx_Pin, tx_Pin, baud_Rate)
     cognew(runshell,@shellstack)        
@@ -69,15 +72,74 @@ pub runshell | errorNumber, errorString
             result := ps.prompt
             if not ps.isEmptyCmd(result)
               \cmdHandler(result)
+{
+pub createFile(forMe)| i,j,k
+    if not forMe
+        return
 
-pub createFile
+    sd.openFile(sd.newFile(string("/loadcell/a.txt")), "W")
+    sd.writeString(string("Hello World!"))
+    sd.closefile
     
+    sd.openFile(sd.newFile(string("/loadcell/b.txt")), "W")
+    sd.writeString(string("Hello World!"))
+    sd.closefile
+    
+    sd.openFile(sd.newFile(string("/loadcell/c.txt")), "W")
+    j:=0
+    repeat 1000
+        sd.writeString(string("Hello World! "))
+        i := 1_000_000_000
+        k:=j
+        repeat 10
+                if k => i
+                        sd.writebyte(k / i + "0")
+                        k //= i
+                        result~~
+
+                elseif result or i == 1
+                        sd.writebyte("0")
+
+                i /= 10
+        sd.writebyte(13)
+        j++
+    sd.closefile
+    ps.puts(string("done"))
+    ps.crr
+    ps.commandHandled
+}
 PRI cmdHandler(cmdLine)
   cmdList(ps.commandDef(string("LIST"), cmdLine))
   cmdDel(ps.commandDef(string("DEL"), cmdLine))
   cmdCat(ps.commandDef(string("CAT"), cmdLine))
   cmdTime(ps.commandDef(string("TIME"), cmdLine))
+  ''createFile(ps.commandDef(string("CREATE"), cmdLine))
   return true
+
+PUB trim(characters) '' 8 Stack Longs
+
+'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+'' // Removes white space and new lines arround the outside of string of characters.
+'' //
+'' // Returns a pointer to the trimmed string of characters.
+'' //
+'' // Characters - A pointer to a string of characters to be trimmed.
+'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  result := ignoreSpace(characters)
+  characters := (result + ((strsize(result) - 1) #> 0))
+
+  repeat
+    case byte[characters]
+      8 .. 13, 32, 127: byte[characters--] := 0
+      other: quit
+PRI ignoreSpace(characters) ' 4 Stack Longs
+
+  result := characters
+  repeat strsize(characters--)
+    case byte[++characters]
+      8 .. 13, 32, 127:
+      other: return characters
 
 PRI ListFiles | entryName, count
 
@@ -103,7 +165,7 @@ PRI ListFiles | entryName, count
         return
   repeat while(entryName := sd.listEntries("N"))     
     if NOT sd.listIsDirectory
-        ps.puts(sd.listName)
+        ps.puts(trim(sd.listName))
         ps.tx(" ")
     
         ps.putd(sd.listSize)     
@@ -162,14 +224,33 @@ PRI cmdList(forMe)
 
   ps.tx(charEOF)
   ps.commandHandled
-PRI cmdDel(forMe)|errorNumber, errorString 
+PUB concat(whereToPut, whereToGet) '' 5 Stack Longs
+
+'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+'' // Concatenates a string onto the end of another. This method can corrupt memory.
+'' //
+'' // Returns a pointer to the new string.
+'' //
+'' // WhereToPut - Address of the string to concatenate a string to.
+'' // WhereToGet - Address of where to get the string to concatenate.
+'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  bytemove((whereToPut + strsize(whereToPut)), whereToGet, (strsize(whereToGet) + 1))
+  return whereToPut
+
+PRI cmdDel(forMe)|errorNumber, errorString
   if not forMe
     return
-  ps.parseAndCheck(1, string("DEL error: no file specified", ps#lf), false)
-  
+
   ps.puts(string("DEL "))
+  ps.parseAndCheck(1, string("error: no file specified", ps#lf), false)
   
-  errorString:=\sd.deleteEntry(ps.currentPar)
+  bytefill(filename,0,26)
+  errorString:=concat(filename,@datafolder)
+  errorString:=concat(filename,string("/"))
+  errorString:=concat(filename,trim(ps.currentPar))
+
+  errorString:=\sd.deleteEntry(filename)
   errorNumber:=sd.partitionError 
   if (errorNumber)
     ps.puts(string("error: "))
@@ -179,27 +260,49 @@ PRI cmdDel(forMe)|errorNumber, errorString
     ps.crr
     ps.commandHandled
     return
-  'filename=ps.currentPar
-  ' delete file from sd card here
-  ' if error deleting
-  '   ps.puts(string("D error: error deleting, file not exist or SD card error"))
-  '   abort ' returns with error    
-  ' and send to serial with ps.puts(string) function
   ps.puts(string("ok"))
   ps.crr
   ps.commandHandled
-PRI cmdCat(forMe)
+PRI cmdCat(forMe)| errorString,errorNumber
   if not forMe
     return
-  ps.parseAndCheck(1, string("CAT error: no file specified", ps#lf), false)  
+  ps.puts(string("CAT "))
+
+  ps.parseAndCheck(1, string("error: no file specified", ps#lf), false)  
+
+  bytefill(filename,0,26)
+  errorString:=concat(filename,@datafolder)
+  errorString:=concat(filename,string("/"))
+  errorString:=concat(filename,trim(ps.currentPar))
+
+  errorString:=\sd.openfile(filename,"R")
+  errorNumber:=sd.partitionError 
+  if (errorNumber)
+    ps.puts(string("error: "))
+    ps.puts(errorString)
+    ps.tx(" ")
+    ps.putd(errorNumber)
+    ps.crr
+    ps.tx(charEOF)
+    ps.commandHandled
+    return
+
+  ps.putd(sd.fileSize)
+  ps.crr
+  
+  repeat until(sd.fileTell == sd.fileSize)
+    sd.readString(@filebuffer, 512)
+    ps.puts(@filebuffer)
   'filename=ps.currentPar
   ' ps.puts(filecontents) from sd card here
   ' if error printing
   '   ps.puts(string("C error: error reading, file not exist or SD card error"))
   '   abort ' returns with error    
   ' and send to serial with ps.puts(string) function
-  ps.puts(ps.currentPar)
-  ps.puts(string(ps#cr))  
+  ''ps.puts(ps.currentPar)
+  ''ps.puts(string(ps#cr))  
+
+  ps.tx(charEOF)
   ps.commandHandled
 PRI cmdTime(forMe)| ye, mo, de, ho, mi, se, dow, a
   if not forMe

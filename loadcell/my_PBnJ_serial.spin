@@ -88,7 +88,7 @@ PUB rxLine(stringPtr,stringSize)|a,b,c
     byte[stringptr]:=13
     stringptr++    
     byte[stringptr]:=0    
-{{
+
 PUB Dec(value) | i, x
 ''   example usage: serial.Dec(-1_234_567_890)
   x := value == NEGX                                    'Check for max negative
@@ -127,7 +127,7 @@ PUB Bin(value, digits)
   value <<= 32 - digits
   repeat digits
     Tx((value <-= 1) & 1 + "0")                         'Transmit the ASCII value of each binary digit
-}}
+
 DAT
               org 0
 pbj           mov       iptr,par                'Point to timedelay and initialize a bunch of stuff.
