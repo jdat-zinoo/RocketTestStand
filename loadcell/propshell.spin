@@ -150,7 +150,7 @@ PRI subMatches(cmdPtr, inputPtr) | i, lenCmdPtr
         if byte[inputPtr] <> 32 and byte[inputPtr] <> CR and byte[inputPtr] <> LF
                 return false
         return true
-PRI strToDec(strPtr) : decVal | valid, char, index, multiply
+pri strToDec(strPtr) : decVal | valid, char, index, multiply
 '' // Convert string to decimal.
 '' // @param                    strPtr                  Pointer to string which should be converted to decimal
 '' // @return                                           Decimal value for strPtr
