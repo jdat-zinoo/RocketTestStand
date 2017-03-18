@@ -42,19 +42,19 @@ CON
 
 dat
     dataFolder  byte    "/LOADCELL",0
-    webFolder   byte    "/WEB",0
+    errorWord   byte    "error: ",0
+''    webFolder   byte    "/WEB",0
 OBJ
   ps    : "propshell"
   sd    : "DS1307_SD-MMC_FATEngine"
   ''debug : "my_PBnJ_serial"
-  adc   : "I2C PASM driver v1.4"
+  adc   : "I2C PASM adc"
 VAR
   long shellstack[128]
-  ''word rtbuffer[10_000]
+  word rtbuffer[10_000]
   byte filename [26]
   byte filebuffer[512]
 PUB main | errorNumber, errorString     
-    ''debug.Start(rx_Pin, tx_Pin, baud_Rate)
     cognew(runshell,@shellstack)        
 
 pub runshell | errorNumber, errorString 
@@ -117,15 +117,6 @@ PRI cmdHandler(cmdLine)
   return true
 
 PUB trim(characters) '' 8 Stack Longs
-
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-'' // Removes white space and new lines arround the outside of string of characters.
-'' //
-'' // Returns a pointer to the trimmed string of characters.
-'' //
-'' // Characters - A pointer to a string of characters to be trimmed.
-'' ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
   result := ignoreSpace(characters)
   characters := (result + ((strsize(result) - 1) #> 0))
 
@@ -134,26 +125,27 @@ PUB trim(characters) '' 8 Stack Longs
       8 .. 13, 32, 127: byte[characters--] := 0
       other: quit
 PRI ignoreSpace(characters) ' 4 Stack Longs
-
   result := characters
   repeat strsize(characters--)
     case byte[++characters]
       8 .. 13, 32, 127:
       other: return characters
-
+pub printErrorWord
+    ps.puts(@errorWord)
 PRI ListFiles | entryName, count
 
-  entryname:=\sd.changeDirectory(string("/LOADCELL"))
+  entryname:=\sd.changeDirectory(@dataFolder)
   count := sd.partitionError 
   if (count==sd#Entry_Not_Found)    'direcory no exist
-      entryname:=\sd.newDirectory(string("/LOADCELL"))
+      entryname:=\sd.newDirectory(@dataFolder)
       count := sd.partitionError 
       if (count)
         return
-  entryname:=\sd.changeDirectory(string("/LOADCELL"))
+  entryname:=\sd.changeDirectory(@dataFolder)
   count := sd.partitionError 
       if (count)
-        ps.puts(string("error: folder does not exist"))
+        printErrorWord
+        ps.puts(string("folder does not exist"))
         return
   count:=0
   sd.listEntries("W") ' Wrap around. 
@@ -253,7 +245,7 @@ PRI cmdDel(forMe)|errorNumber, errorString
   errorString:=\sd.deleteEntry(filename)
   errorNumber:=sd.partitionError 
   if (errorNumber)
-    ps.puts(string("error: "))
+    printErrorWord
     ps.puts(errorString)
     ps.tx(" ")
     ps.putd(errorNumber)
@@ -278,7 +270,7 @@ PRI cmdCat(forMe)| errorString,errorNumber
   errorString:=\sd.openfile(filename,"R")
   errorNumber:=sd.partitionError 
   if (errorNumber)
-    ps.puts(string("error: "))
+    printErrorWord
     ps.puts(errorString)
     ps.tx(" ")
     ps.putd(errorNumber)
@@ -328,7 +320,7 @@ PRI cmdTime(forMe)| ye, mo, de, ho, mi, se, dow, a
 
   ye:=ps.currentParDec
   if (ye<2017) or (ye>2050)
-    ps.puts(string("error: wrong year"))
+    ps.puts(string("wrong year"))
     ps.crr
     return ps.commandHandled
 
@@ -342,35 +334,40 @@ PRI cmdTime(forMe)| ye, mo, de, ho, mi, se, dow, a
   ps.parseAndCheck(3, string("error: date missing", ps#lf), true)
   de:=ps.currentParDec
   if (de<1) or (de>31)
-    ps.puts(string("error: wrong day"))
+    printErrorWord
+    ps.puts(string("wrong day"))
     ps.crr
     return ps.commandHandled
 
   ps.parseAndCheck(4, string("error: hours missing", ps#lf), true)
   ho:=ps.currentParDec
   if (ho<0) or (ho>23)
-    ps.puts(string("error: wrong hours"))
+    printErrorWord
+    ps.puts(string("wrong hours"))
     ps.crr
     return ps.commandHandled
 
   ps.parseAndCheck(5, string("error: minutes missing", ps#lf), true)
   mi:=ps.currentParDec
   if (mi<0) or (mi>59)
-    ps.puts(string("error: wrong minutes"))
+    printErrorWord
+    ps.puts(string("wrong minutes"))
     ps.crr
     return ps.commandHandled
 
   ps.parseAndCheck(6, string("error: seconds missing", ps#lf), true)
   se:=ps.currentParDec
   if (se<0) or (se>59)
-    ps.puts(string("error: wrong seconds"))
+    printErrorWord
+    ps.puts(string("wrong seconds"))
     ps.crr
     return ps.commandHandled
 
   ps.parseAndCheck(7, string("error: day of week missing", ps#lf), true)
   dow:=ps.currentParDec
   if (dow<1) or (dow>7)
-    ps.puts(string("error: wrong day of week"))
+    printErrorWord
+    ps.puts(string("wrong day of week"))
     ps.crr
     return ps.commandHandled
   

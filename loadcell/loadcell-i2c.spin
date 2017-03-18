@@ -24,28 +24,42 @@ CON
     'statusLedPin=-1
 
 OBJ
-debug : "my_PBnJ_serial"
-adc   : "I2C PASM adc"
+    debug : "my_PBnJ_serial"
+    adc   : "I2C PASM adc"
 VAR
-    word rtbuffer[10_000]
-PUB main | errorNumber, errorString,a,b,s
+    ''word rtbuffer[10_000]
+PUB main | i,a,b
     debug.Start(rx_Pin, tx_Pin, baud_Rate)
-    adc.start(adcSCLpin,adcSDApin,adcI2Cfreq)
-    
+    adc.start(adcSCLpin,adcSDApin,adcI2Cfreq,launchPin)
+
+    waitcnt(clkfreq/500+cnt)
+        
     repeat
-        s:=cnt
         a:=adc.read
-        s:=cnt-s
-        b:=a & $ff
-        a:=a>>8
-        b:=b<<8
-        a:=a+b
+        repeat while a>4096
+          a:=adc.read
+{       
+        if (a>4096) or (a<0)
+          debug.str(string("Timeout",13))
+          ''waitcnt(MS_001+cnt)
+          ''waitcnt(clkfreq/4000+cnt)
+          waitcnt(clkfreq/10+cnt)
+          next
+}
         debug.dec(a)
-        debug.tx(9)
-        debug.dec(s>>3)
-        debug.cr
-        waitcnt(MS_001+cnt)
-        waitcnt(clkfreq+cnt)
+{
+        if a==0
+            i++
+            debug.tx(9)
+            debug.dec(i)
+        else
+            i:=0            
+}
+      debug.cr
+      ''debug.lf
+      ''waitcnt(MS_001+cnt)
+      ''waitcnt(clkfreq/4000+cnt)
+      ''waitcnt(clkfreq/10+cnt)
 DAT
 {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
