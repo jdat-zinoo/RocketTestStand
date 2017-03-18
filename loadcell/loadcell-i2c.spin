@@ -1,5 +1,5 @@
 {{
-// test code for realtime I2C with hue PASM I2C modifications
+// test code for realtime ADC I2C reader with hue PASM I2C modifications
 // I2C PASM Author: Chris Gadd
 // Modified by JDat
 }}
@@ -15,22 +15,37 @@ CON
     TX_PIN = 30
       
     ''ADC setting
-    ''adcSDApin=29
-    ''adcSCLpin=28
-    
+    adcSDApin=29
+    adcSCLpin=28
+    adcI2Cfreq=400_000
     ''launch pin
     launchPin = 23
     'status led
     'statusLedPin=-1
 
 OBJ
-  debug : "my_PBnJ_serial"
-  adc   : "I2C PASM adc"
+debug : "my_PBnJ_serial"
+adc   : "I2C PASM adc"
 VAR
-  word rtbuffer[10_000]
-PUB main | errorNumber, errorString     
-    ''debug.Start(rx_Pin, tx_Pin, baud_Rate)
-    ''cognew(runshell,@shellstack)        
+    word rtbuffer[10_000]
+PUB main | errorNumber, errorString,a,b,s
+    debug.Start(rx_Pin, tx_Pin, baud_Rate)
+    adc.start(adcSCLpin,adcSDApin,adcI2Cfreq)
+    
+    repeat
+        s:=cnt
+        a:=adc.read
+        s:=cnt-s
+        b:=a & $ff
+        a:=a>>8
+        b:=b<<8
+        a:=a+b
+        debug.dec(a)
+        debug.tx(9)
+        debug.dec(s>>3)
+        debug.cr
+        waitcnt(MS_001+cnt)
+        waitcnt(clkfreq+cnt)
 DAT
 {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
