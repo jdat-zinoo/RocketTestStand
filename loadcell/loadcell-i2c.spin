@@ -26,40 +26,53 @@ CON
 OBJ
     debug : "my_PBnJ_serial"
     adc   : "I2C PASM adc"
-VAR
-    ''word rtbuffer[10_000]
-PUB main | i,a,b
+PUB main | rawptr,buffhead,buffptr,a,b,c
     debug.Start(rx_Pin, tx_Pin, baud_Rate)
     adc.start(adcSCLpin,adcSDApin,adcI2Cfreq,launchPin)
 
     waitcnt(clkfreq/500+cnt)
-        
+
+    rawptr:=adc.dataptr
+    buffhead:=rawptr+2
+    buffptr:=rawptr+4    
+    c:=cnt
     repeat
-        a:=adc.read
-        repeat while a>4096
-          a:=adc.read
-{       
-        if (a>4096) or (a<0)
-          debug.str(string("Timeout",13))
+        debug.str(string("Wait for launch!",13))
+        repeat while word[buffhead][0]>10_000
+        debug.str(string("Logging...",13))        
+        repeat while word[buffhead][0]<10_000
+        repeat a from 0 to 9_999
+          b:=word[buffptr][a]
+          debug.dec(b)
+          debug.tx(9)
+          debug.dec(a)
+          debug.cr
+          ''debug.lf    
+                      
+        ''adcRAW(a)
+        ''bufferindex(b)
+          ''waitcnt(c+=MS_001)
           ''waitcnt(MS_001+cnt)
           ''waitcnt(clkfreq/4000+cnt)
-          waitcnt(clkfreq/10+cnt)
-          next
-}
-        debug.dec(a)
-{
-        if a==0
-            i++
-            debug.tx(9)
-            debug.dec(i)
-        else
-            i:=0            
-}
+          ''waitcnt(clkfreq/10+cnt)
+          ''waitcnt(clkfreq/100+cnt)
+
+pub bufferindex(ptr)|a
+    a:=word[ptr][0]
+    if a<10_005
+      debug.dec(a)
+      ''debug.hex(a,4)
       debug.cr
-      ''debug.lf
-      ''waitcnt(MS_001+cnt)
-      ''waitcnt(clkfreq/4000+cnt)
-      ''waitcnt(clkfreq/10+cnt)
+      ''debug.lf    
+pub adcRAW(ptr)|a
+        a:=word[ptr][0]
+       if a<4096
+          debug.dec(a)
+          ''debug.hex(a,4)
+          debug.cr
+          ''debug.lf
+
+  
 DAT
 {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -28,11 +28,11 @@ CON
     I2CLock = -1
     
     ''ADC setting
-    ''adcSDApin=29
-    ''adcSCLpin=28
-    
-    ''launch pin
+    adcSDApin=29
+    adcSCLpin=28
+    adcI2Cfreq=400_000
     launchPin = 23
+
     'status led
     'statusLedPin=-1
 
@@ -50,11 +50,12 @@ OBJ
   ''debug : "my_PBnJ_serial"
   adc   : "I2C PASM adc"
 VAR
-  long shellstack[128]
-  word rtbuffer[10_000]
+  long shellstack[64]
+  ''word rtbuffer[10_000]
   byte filename [26]
   byte filebuffer[512]
 PUB main | errorNumber, errorString     
+    adc.start(adcSCLpin,adcSDApin,adcI2Cfreq,launchPin)
     cognew(runshell,@shellstack)        
 
 pub runshell | errorNumber, errorString 
