@@ -76,7 +76,7 @@ PUB rxLine(stringPtr,stringSize)|a,b,c
     b:=stringSize-2
     c:=stringPtr
     repeat while b>0
-        a:=rx
+        a:=rx ''time(100)
         if ((a==13) or (a==10))
             byte[stringptr]:=a
             stringptr++

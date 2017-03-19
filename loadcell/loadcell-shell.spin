@@ -52,13 +52,16 @@ OBJ
 VAR
   long shellstack[64]
   ''word rtbuffer[10_000]
+  word adcrawptr
   byte filename [26]
   byte filebuffer[512]
 PUB main | errorNumber, errorString     
     adc.start(adcSCLpin,adcSDApin,adcI2Cfreq,launchPin)
-    cognew(runshell,@shellstack)        
+    waitcnt(clkfreq/100+cnt)
+    adcrawptr:=adc.dataptr
+    ''cognew(runshell,@shellstack)        
 
-pub runshell | errorNumber, errorString 
+''pub runshell | errorNumber, errorString
     ps.init(RX_PIN, TX_PIN, BAUD_RATE)
     ps.crr
     sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock) 
@@ -72,7 +75,19 @@ pub runshell | errorNumber, errorString
         repeat  ' main shell loop
             result := ps.prompt
             if not ps.isEmptyCmd(result)
-              \cmdHandler(result)
+                \cmdHandler(result)
+            ''put sensor read here
+            ''readsensor
+{
+pub readSensor
+        result:=word[adcrawptr][0]
+       if result<4096
+          ps.tx("S")
+          ps.putd(result)
+          ''debug.hex(a,4)
+          ps.crr
+          ''debug.lf
+}
 {
 pub createFile(forMe)| i,j,k
     if not forMe
