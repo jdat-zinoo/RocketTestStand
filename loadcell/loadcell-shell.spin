@@ -64,6 +64,10 @@ PUB main | errorNumber, errorString
 ''pub runshell | errorNumber, errorString
     ps.init(RX_PIN, TX_PIN, BAUD_RATE)
     ps.crr
+    repeat
+        readSensor
+        waitcnt(clkfreq/10+cnt)
+        
     sd.FATEngineStart(sdDOPin, sdCLKPin, sdDIPin, sdCSPin, sdWPPin, sdCDPin, rtcSDAPin, rtcSCLPin, I2CLock) 
     errorString := \sd.mountPartition(0) ' Returns the address of the error string or null. 
     errorNumber := sd.partitionError ' Returns the error number or zero. 
@@ -78,16 +82,16 @@ PUB main | errorNumber, errorString
                 \cmdHandler(result)
             ''put sensor read here
             ''readsensor
-{
+
 pub readSensor
         result:=word[adcrawptr][0]
        if result<4096
-          ps.tx("S")
+          ''ps.tx("S")
           ps.putd(result)
           ''debug.hex(a,4)
           ps.crr
           ''debug.lf
-}
+
 {
 pub createFile(forMe)| i,j,k
     if not forMe

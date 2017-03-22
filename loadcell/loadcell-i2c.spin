@@ -11,6 +11,7 @@ CON
     MS_001   = CLK_FREQ / 1_000
     '' Serial port settings for shell
     BAUD_RATE = 115_200
+    ''BAUD_RATE = 230_400
     RX_PIN = 31
     TX_PIN = 30
       
@@ -35,40 +36,33 @@ PUB main | rawptr,buffhead,buffptr,a,b,c
     rawptr:=adc.dataptr
     buffhead:=rawptr+2
     buffptr:=rawptr+4    
-    c:=cnt
+    ''c:=cnt
+        
     repeat
-        debug.str(string("Wait for launch!",13))
-        repeat while word[buffhead][0]>10_000
-        debug.str(string("Logging...",13))        
-        repeat while word[buffhead][0]<10_000
-        repeat a from 0 to 9_999
-          b:=word[buffptr][a]
-          debug.dec(b)
-          debug.tx(9)
-          debug.dec(a)
-          debug.cr
-          ''debug.lf    
-                      
-        ''adcRAW(a)
-        ''bufferindex(b)
-          ''waitcnt(c+=MS_001)
-          ''waitcnt(MS_001+cnt)
-          ''waitcnt(clkfreq/4000+cnt)
-          ''waitcnt(clkfreq/10+cnt)
-          ''waitcnt(clkfreq/100+cnt)
-
-pub bufferindex(ptr)|a
-    a:=word[ptr][0]
-    if a<10_005
-      debug.dec(a)
-      ''debug.hex(a,4)
-      debug.cr
-      ''debug.lf    
+      b:=word[buffhead][0]
+      if b<10_000
+        a:=0
+        repeat while b<10_000
+          repeat while a<b
+            debug.tx("R")
+            debug.tx(",")
+            debug.dec4(a)
+            debug.tx(",")
+            debug.dec4(word[buffptr][a])
+            debug.cr
+            ''debug.lf 
+            a++
+            b:=word[buffhead][0]
+            if b>10_000
+              b:=10_000
+      else                          
+        adcRAW(rawptr)      
+            
 pub adcRAW(ptr)|a
         a:=word[ptr][0]
        if a<4096
-          debug.dec(a)
-          ''debug.hex(a,4)
+          debug.tx("S")
+          debug.dec4(a)
           debug.cr
           ''debug.lf
 
