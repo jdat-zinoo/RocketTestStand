@@ -1,89 +1,82 @@
+var dps = [];
+var chart = {};
+var live_data_points = [];
+
+
 $( document ).ready(function() {
-    // Web-socket handler
-    var ws = new WebSocket(websocket_url);
-    var ws_handler = {
-        "outbox_buffer": [],
-        "status": ws.CLOSED,
-        "callbacks": {},
-        "unique_filter": function(value, index, self) {
-            return self.indexOf(value) === index;
+
+    chart = new CanvasJS.Chart('chartContainer', {
+        zoomEnabled: true,
+        title: {
+            text: "Rocket data"
         },
-        "register": function(keys, callback) {
-            for (var i=0; i < keys.length; i++) {
-                if (keys[i] in ws_handler["callbacks"]) {
-                    ws_handler["callbacks"][keys[i]].push(callback);
+        axisX: {
+            labelAngle: 30
+        },
+        axisY: {
+            includeZero: true
+        },
+        data: dps,
+        legend: {
+            horizontalAlign: "right", // left, center ,right
+            verticalAlign: "top",  // top, center, bottom
+            fontSize: 13,
+            cursor: "pointer",
+            itemclick: function (e) {
+                if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                    e.dataSeries.visible = false;
                 } else {
-                    ws_handler["callbacks"][keys[i]] = [callback]
+                    e.dataSeries.visible = true;
                 }
-                var unique = ws_handler["callbacks"][keys[i]].filter(ws_handler["unique_filter"]);
-                ws_handler["callbacks"][keys[i]] = unique;
+                chart.render();
             }
-        },
-        "remove": function(key, callback) {
-            if(key in ws_handler["callbacks"]) {
-                var index = ws_handler["callbacks"][key].indexOf(callback);
-                if (index > -1) {
-                    ws_handler["callbacks"][key].splice(index, 1);
-                }
-            };
-        },
-        "new_msg": function(evt) {
-            obj = JSON.parse(evt.data);
-            if(obj['key'] in ws_handler["callbacks"]) {
-                for (var i=0; i < ws_handler["callbacks"][obj['key']].length; i++) {
-                    ws_handler["callbacks"][obj['key']][i](obj['key'], obj['data']);
-                }
-            };
-        },
-        "send_msg": function(key, data) {
-            var msg = JSON.stringify({
-                "key": key,
-                "data": data
-            });
-            if (ws_handler["status"] == ws.OPEN) {
-                ws.send(msg);
-            } else {
-                ws_handler["outbox_buffer"].push(msg);
-            }
-        },
-        "onclose": function(evt) {
-            ws_handler["status"] = ws.CLOSED;
-        },
-        "onopen": function(evt) {
-            ws_handler["status"] = ws.OPEN;
-            for (var i=0; i < ws_handler["outbox_buffer"].length; i++) {
-                ws.send(ws_handler["outbox_buffer"][i]);
-            }
-            ws_handler["outbox_buffer"] = [];
         }
-    }
-
-    ws.onclose = ws_handler["onclose"];
-    ws.onopen = ws_handler["onopen"];
-    ws.onmessage = ws_handler["new_msg"];
-
-    // Navigation over views
-    $("nav [data-nav_id]").on("click", function() {
-        var selected = $(this);
-        $(".rocket_view").each(function(index, node) {
-            $(node).addClass("hidden");
-            if(selected.data('nav_id') == node.id) {
-                $(node).removeClass("hidden")
-            }
-        })
     });
+
 
     // Test
     function testCallback(key, data) {
         console.log(key, data);
     }
 
-    function launchCallback(key, data) {
+    /*
+        Available channels
+        live_data
+        launch_detected
+        launch_data
+        filesystem_update
 
-    }
-
-    ws_handler["register"](["test"], testCallback);
-    ws_handler["send_msg"]("test", "this is the message");
+        Available actions
+        LIST
+    */
+//    ws_handler["register"](["live_data"], testCallback);
+    ws_handler['register'](['filesystem_update'], filesystem_handler['ws_handler']);
+    ws_handler['register'](['launch_detected'], graph_handler['rocket_detection_ws']);
+    ws_handler['register'](['launch_data'], graph_handler['rocket_data_ws']);
+    filesystem_handler['init']();
+    graph_handler['init']();
+    settings_handler['init']();
 //    ws_handler["remove"]("test", testCallback);
 
+    var active_nav = 'nav_filesystem';
+    $('.btn-nav[data-nav_id="' + active_nav + '"]').addClass('active');
+    filesystem_handler['open']();
+
+    // Navigation over views
+    $(".btn-nav").on("click", function() {
+        $("#footer").css("padding-top", "0px");
+        var selected = $(this);
+        $('.btn-nav[data-nav_id="' + active_nav + '"]').removeClass('active');
+        $('#' + active_nav).hide();
+        selected.addClass('active');
+        active_nav = selected.data('nav_id');
+        $('#' + active_nav).show();
+        switch(active_nav) {
+            case 'nav_filesystem':
+                filesystem_handler['open']();
+                break;
+            case 'nav_graph':
+                graph_handler['open']();
+        };
+    });
 });

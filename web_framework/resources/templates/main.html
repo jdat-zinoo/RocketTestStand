@@ -5,7 +5,7 @@
         {% if "default" in view.keys() %}
             <div class="rocket_view" id="{{ view['nav_id'] }}">
         {% else %}
-            <div class="hidden rocket_view" id="{{ view['nav_id'] }}">
+            <div class="rocket_view" id="{{ view['nav_id'] }}" style="display: none;">
         {% end %}
             {% module Template(view['template']) %}
         </div>

@@ -1,4 +1,10 @@
+import Queue
 import json
+import multiprocessing
+
+import sys
+import uuid
+
 import config
 import sass
 import modules.js_render as js_render
@@ -7,8 +13,15 @@ import tornado.web
 import tornado.autoreload
 import tornado.template
 import tornado.websocket
+from multiprocessing import Queue
 import fnmatch
 import os
+
+from modules.com_operations import ComOperations
+
+clients = {}
+outbox_queue = Queue()
+inbox_queue = Queue()
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -19,16 +32,16 @@ class MainHandler(tornado.web.RequestHandler):
 
 class WSHandler(tornado.websocket.WebSocketHandler):
     def open(self):
-        self.write_message(json.dumps({'key': 'test', 'data': 'connected'}))
+        self.uid = uuid.uuid4()
+        clients[self.uid] = self
 
     def on_message(self, message):
         obj = json.loads(message)
         print obj
-        print 'Incoming message:', obj['key'], obj['data']
-        self.write_message(json.dumps({'key': 'test', 'data': obj['data']}))
+        outbox_queue.put(obj)
 
     def on_close(self):
-        print 'Connection was closed...'
+        del clients[self.uid]
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
@@ -44,14 +57,24 @@ def make_app():
     ], **settings)
 
 
+def send_to_all():
+    while not inbox_queue.empty():
+        msg = json.dumps(inbox_queue.get())
+        for client in clients.values():
+            client.write_message(msg)
+
 if __name__ == "__main__":
-    sass.compile(dirname=(config.SASS_DIR, config.SASS_OUTPUT_DIR), source_comments=True)
-    js_render.render()
+    com_manager = ComOperations(outbox_queue, inbox_queue, config.DEBUG)
+    com_manager.start()
     app = make_app()
     app.listen(8888)
-    tornado.autoreload.start()
-    for root, dirnames, filenames in os.walk('resources'):
-        for filename in fnmatch.filter(filenames, '*'):
-            print filename
-            tornado.autoreload.watch(os.path.join(root, filename))
+    if config.DEBUG:
+        sass.compile(dirname=(config.SASS_DIR, config.SASS_OUTPUT_DIR), source_comments=True)
+        js_render.render()
+        tornado.autoreload.start()
+        for root, dirnames, filenames in os.walk('resources'):
+            for filename in fnmatch.filter(filenames, '*'):
+                print filename
+                tornado.autoreload.watch(os.path.join(root, filename))
+    tornado.ioloop.PeriodicCallback(send_to_all, 500).start()
     tornado.ioloop.IOLoop.current().start()

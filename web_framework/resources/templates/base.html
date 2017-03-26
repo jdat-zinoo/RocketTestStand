@@ -11,6 +11,8 @@
     <title>Rocket Test</title>
 
     <link href="{{ static_url('css/main.css') }}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" media="screen"
+     href="http://tarruda.github.com/bootstrap-datetimepicker/assets/css/bootstrap-datetimepicker.min.css">
     <script>
         var websocket_url = "{{ websocket_url }}";
     </script>
@@ -22,7 +24,9 @@
 <div class="container">
     {% module Template('includes/header.html', views=views) %}
 
-    {% block body_content %}{% end %}
+    <div class="row main_container">
+        {% block body_content %}{% end %}
+    </div>
 
     {% module Template('includes/footer.html') %}
 

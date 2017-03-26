@@ -1,14 +1,35 @@
-<div class="header clearfix">
-    <nav>
-        <ul class="nav nav-pills pull-right">
-            {% for view in views.itervalues() %}
-                {% if "default" in view.keys() %}
-                    <li role="presentation" class="active"><a href="#" data-nav_id="{{ view['nav_id'] }}">{{ view['nav_text'] }}</a></li>
-                {% else %}
-                    <li role="presentation"><a href="#" data-nav_id="{{ view['nav_id'] }}">{{ view['nav_text'] }}</a></li>
-                {% end %}
-            {% end %}
-        </ul>
-    </nav>
-    <h3 class="text-muted">Rocket test</h3>
-</div>
+
+    <div class="row">
+		<div class="btn-group btn-group-justified">
+            <div class="btn-group">
+                <button type="button" class="btn btn-nav" data-nav_id="nav_graph">
+                    <span class="glyphicon glyphicon-equalizer"></span>
+    			    <p>Graph</p>
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-nav" data-nav_id="nav_filesystem">
+                    <span class="glyphicon glyphicon-folder-open"></span>
+    			    <p>Files</p>
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-nav" data-nav_id="nav_settings">
+                    <span class="glyphicon glyphicon-cog"></span>
+    			    <p>Settings</p>
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-nav" data-nav_id="nav_stats">
+                    <span class="glyphicon glyphicon-time"></span>
+    			    <p>Statistics</p>
+                </button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-nav" data-nav_id="nav_errors">
+                    <span class="glyphicon glyphicon-bell"></span>
+    			    <p>Errors</p>
+                </button>
+            </div>
+        </div>
+	</div>

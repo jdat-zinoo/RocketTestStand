@@ -1,19 +1,15 @@
-<div id="chart"></div>
-
-<script>
-
-var data = [[]];
-
-var graph = new Rickshaw.Graph( {
-        element: document.querySelector("#chart"),
-        width: 580,
-        height: 250,
-        series: [ {
-                color: 'steelblue',
-                data: data
-        } ]
-} );
-
-graph.render();
-
-</script>
+<div class="row">
+    <div class=" nopadding" style="margin-top:30px;">
+        <div id="chartContainer"></div>
+    </div>
+</div>
+<div class="row>
+    <div class="col-md-12">
+        <div class="btn-group pull-left" role="group" aria-label="">
+            <button type="button" data-value="line" class="btn btn-default js_chart_type">Line</button>
+            <button type="button" data-value="spline" class="btn btn-default js_chart_type">Spline</button>
+            <button type="button" data-value="stepLine" class="btn btn-default js_chart_type">Step</button>
+            <button type="button" data-value="scatter" class="btn btn-default js_chart_type">Scatter</button>
+        </div>
+    </div>
+</div>

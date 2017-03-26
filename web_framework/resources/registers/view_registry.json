@@ -1,13 +1,25 @@
 {
   "main": {
     "template": "views/main_view.html",
-    "nav_id": "nav_main",
-    "nav_text": "Main",
-    "default": true
+    "nav_id": "nav_graph",
+    "nav_text": "Main"
   },
   "filesystem": {
     "template": "views/filesystem_view.html",
     "nav_id": "nav_filesystem",
-    "nav_text": "Filesystem"
+    "nav_text": "Filesystem",
+    "default": true
+  },
+  "settings": {
+    "template": "views/settings_view.html",
+    "nav_id": "nav_settings"
+  },
+  "stats": {
+    "template": "views/stats_view.html",
+    "nav_id": "nav_stats"
+  },
+  "errors": {
+    "template": "views/errors_view.html",
+    "nav_id": "nav_errors"
   }
 }
